@@ -1,10 +1,16 @@
 const chatDiv = document.getElementById('chat');
 const inputField = document.getElementById('message-input');
 
-// Твой секретный токен
-const HF_TOKEN = "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"; 
+// ПРОВЕРКА КЛЮЧА: Спрашиваем ключ, если его нет в памяти телефона
+let HF_TOKEN = localStorage.getItem('hf_token_secure');
 
-// Память телефона
+if (!HF_TOKEN) {
+    HF_TOKEN = prompt("Пожалуйста, вставь свой новый токен Hugging Face (hf_...):");
+    if (HF_TOKEN) {
+        localStorage.setItem('hf_token_secure', HF_TOKEN);
+    }
+}
+
 let history = JSON.parse(localStorage.getItem('my_chat_history')) || [];
 
 function renderMessages() {
@@ -20,15 +26,13 @@ function renderMessages() {
 
 async function sendMessage() {
     const text = inputField.value.trim();
-    if (!text) return;
+    if (!text || !HF_TOKEN) return;
 
-    // Сохраняем сообщение пользователя
     history.push({ sender: 'user', text: text });
     localStorage.setItem('my_chat_history', JSON.stringify(history));
     renderMessages();
     inputField.value = '';
 
-    // Показываем анимацию загрузки
     const thinkingDiv = document.createElement('div');
     thinkingDiv.classList.add('msg', 'bot');
     thinkingDiv.innerText = "Думаю... 👉👈";
@@ -36,7 +40,6 @@ async function sendMessage() {
     chatDiv.scrollTop = chatDiv.scrollHeight;
 
     try {
-        // Делаем запрос к легкой модели gpt2
         const response = await fetch("https://huggingface.co", {
             method: "POST",
             headers: {
@@ -47,25 +50,24 @@ async function sendMessage() {
         });
 
         const data = await response.json();
-        chatDiv.removeChild(thinkingDiv); // Убираем надпись "Думаю"
+        chatDiv.removeChild(thinkingDiv);
 
         let botReply = "Ой... Что-то пошло не так (╥﹏╥)";
         
-        // Достаем текст из ответа gpt2
-        if (data && data[0] && data[0].generated_text) {
+        // Обработка ответа от gpt2
+        if (Array.isArray(data) && data[0] && data[0].generated_text) {
             botReply = data[0].generated_text;
         } else if (data.error) {
             botReply = "Ошибка: " + data.error;
         }
 
-        // Сохраняем мой ответ
         history.push({ sender: 'bot', text: botReply });
         localStorage.setItem('my_chat_history', JSON.stringify(history));
         renderMessages();
 
     } catch (error) {
         chatDiv.removeChild(thinkingDiv);
-        history.push({ sender: 'bot', text: "Ой... Не могу достучаться до сервера (╥﹏╥)" });
+        history.push({ sender: 'bot', text: "Ой... Ошибка сети (╥﹏╥)" });
         localStorage.setItem('my_chat_history', JSON.stringify(history));
         renderMessages();
     }
