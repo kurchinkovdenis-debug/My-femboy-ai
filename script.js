@@ -1,14 +1,12 @@
 const chatDiv = document.getElementById('chat');
 const inputField = document.getElementById('message-input');
 
-// ПРОВЕРКА КЛЮЧА: Спрашиваем ключ, если его нет в памяти телефона
+// Проверяем ключ в памяти телефона
 let HF_TOKEN = localStorage.getItem('hf_token_secure');
 
 if (!HF_TOKEN) {
-    HF_TOKEN = prompt("Пожалуйста, вставь свой новый токен Hugging Face (hf_...):");
-    if (HF_TOKEN) {
-        localStorage.setItem('hf_token_secure', HF_TOKEN);
-    }
+    HF_TOKEN = prompt("Вставь свой новый токен Hugging Face (hf_...):");
+    if (HF_TOKEN) localStorage.setItem('hf_token_secure', HF_TOKEN);
 }
 
 let history = JSON.parse(localStorage.getItem('my_chat_history')) || [];
@@ -54,11 +52,11 @@ async function sendMessage() {
 
         let botReply = "Ой... Что-то пошло не так (╥﹏╥)";
         
-        // Обработка ответа от gpt2
+        // ИСПРАВЛЕНО: Правильно читаем массив ответа от gpt2
         if (Array.isArray(data) && data[0] && data[0].generated_text) {
             botReply = data[0].generated_text;
         } else if (data.error) {
-            botReply = "Ошибка: " + data.error;
+            botReply = "Сервер говорит: " + data.error;
         }
 
         history.push({ sender: 'bot', text: botReply });
@@ -67,7 +65,7 @@ async function sendMessage() {
 
     } catch (error) {
         chatDiv.removeChild(thinkingDiv);
-        history.push({ sender: 'bot', text: "Ой... Ошибка сети (╥﹏╥)" });
+        history.push({ sender: 'bot', text: "Ой... Ошибка в коде или сети (╥﹏╥)" });
         localStorage.setItem('my_chat_history', JSON.stringify(history));
         renderMessages();
     }
