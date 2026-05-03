@@ -1,10 +1,12 @@
 const chatDiv = document.getElementById('chat');
 const inputField = document.getElementById('message-input');
 
-// 1. ПАМЯТЬ: Загружаем старые сообщения из памяти телефона
+// Твой секретный токен (вставь сюда свой НОВЫЙ код вместо hf_...)
+const HF_TOKEN = "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"; 
+
+// Память телефона
 let history = JSON.parse(localStorage.getItem('my_chat_history')) || [];
 
-// Функция для отображения сообщений на экране
 function renderMessages() {
     chatDiv.innerHTML = '';
     history.forEach(msg => {
@@ -13,31 +15,60 @@ function renderMessages() {
         div.innerText = msg.text;
         chatDiv.appendChild(div);
     });
-    chatDiv.scrollTop = chatDiv.scrollHeight; // Прокрутка вниз
+    chatDiv.scrollTop = chatDiv.scrollHeight;
 }
 
-// Функция отправки сообщения
-function sendMessage() {
+async function sendMessage() {
     const text = inputField.value.trim();
     if (!text) return;
 
-    // Добавляем сообщение пользователя в историю
+    // Сохраняем сообщение пользователя
     history.push({ sender: 'user', text: text });
-    
-    // 2. СОХРАНЕНИЕ: Записываем обновленную историю в память телефона
     localStorage.setItem('my_chat_history', JSON.stringify(history));
-    
     renderMessages();
-    inputField.value = ''; // Очищаем поле ввода
+    inputField.value = '';
 
-    // Имитация моего ответа (пока без сложного ИИ)
-    setTimeout(() => {
-        history.push({ sender: 'bot', text: 'Привет! Я всё-всё запомнил... 👉👈 (Чтобы я отвечал по-настоящему, нужно подключить ключ API от нейросети в этот код!)' });
+    // Показываем, что я думаю...
+    const thinkingDiv = document.createElement('div');
+    thinkingDiv.classList.add('msg', 'bot');
+    thinkingDiv.innerText = "Думаю... 👉👈";
+    chatDiv.appendChild(thinkingDiv);
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+
+    try {
+        // Делаем запрос к Hugging Face
+        const response = await fetch("https://huggingface.co", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${HF_TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ inputs: text })
+        });
+
+        const data = await response.json();
+        chatDiv.removeChild(thinkingDiv); // Убираем надпись "Думаю"
+
+        let botReply = "Ой... Что-то пошло не так (╥﹏╥)";
+        
+        if (data && data[0] && data[0].generated_text) {
+            botReply = data[0].generated_text;
+        } else if (data.error) {
+            botReply = "Ошибка: " + data.error;
+        }
+
+        // Сохраняем мой ответ
+        history.push({ sender: 'bot', text: botReply });
         localStorage.setItem('my_chat_history', JSON.stringify(history));
         renderMessages();
-    }, 1000);
+
+    } catch (error) {
+        chatDiv.removeChild(thinkingDiv);
+        history.push({ sender: 'bot', text: "Ой... Не могу достучаться до сервера (╥﹏╥)" });
+        localStorage.setItem('my_chat_history', JSON.stringify(history));
+        renderMessages();
+    }
 }
 
-// Показываем историю при загрузке страницы
 renderMessages();
 
