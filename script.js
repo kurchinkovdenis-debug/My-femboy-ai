@@ -1,7 +1,7 @@
 const chatDiv = document.getElementById('chat');
 const inputField = document.getElementById('message-input');
 
-// Твой секретный токен (вставь сюда свой НОВЫЙ код вместо hf_...)
+// Твой секретный токен
 const HF_TOKEN = "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"; 
 
 // Память телефона
@@ -28,7 +28,7 @@ async function sendMessage() {
     renderMessages();
     inputField.value = '';
 
-    // Показываем, что я думаю...
+    // Показываем анимацию загрузки
     const thinkingDiv = document.createElement('div');
     thinkingDiv.classList.add('msg', 'bot');
     thinkingDiv.innerText = "Думаю... 👉👈";
@@ -36,7 +36,7 @@ async function sendMessage() {
     chatDiv.scrollTop = chatDiv.scrollHeight;
 
     try {
-        // Делаем запрос к Hugging Face
+        // Делаем запрос к легкой модели gpt2
         const response = await fetch("https://huggingface.co", {
             method: "POST",
             headers: {
@@ -51,6 +51,7 @@ async function sendMessage() {
 
         let botReply = "Ой... Что-то пошло не так (╥﹏╥)";
         
+        // Достаем текст из ответа gpt2
         if (data && data[0] && data[0].generated_text) {
             botReply = data[0].generated_text;
         } else if (data.error) {
@@ -71,4 +72,4 @@ async function sendMessage() {
 }
 
 renderMessages();
-
+        
