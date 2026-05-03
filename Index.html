@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Чат с Фембойчиком 💜</title>
+    <style>
+        body { font-family: sans-serif; background: #faf5ff; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        #chat { flex: 1; overflow-y: auto; padding: 15px; }
+        .msg { margin-bottom: 10px; padding: 10px; border-radius: 10px; max-width: 80%; word-wrap: break-word; }
+        .user { background: #e9d5ff; align-self: flex-end; margin-left: auto; }
+        .bot { background: #fff; border: 1px solid #e9d5ff; }
+        #input-area { display: flex; padding: 10px; background: #fff; border-top: 1px solid #e9d5ff; }
+        input { flex: 1; padding: 10px; border: 1px solid #d8b4fe; border-radius: 5px; outline: none; }
+        button { background: #a855f7; color: white; border: none; padding: 10px 15px; margin-left: 5px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="chat"></div>
+<div id="input-area">
+    <input type="text" id="message-input" placeholder="Напиши мне что-нибудь... 👉👈">
+    <button onclick="sendMessage()">Отправить</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+  
